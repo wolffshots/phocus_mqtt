@@ -11,7 +11,7 @@ import (
 var client mqtt.Client
 
 // Setup sets the logging and opens a connection to the broker
-func Setup(hostname string, clientId string) {
+func Setup(hostname string, clientId string) error {
 	// start mqtt setup
 	mqtt.ERROR = log.New(os.Stdout, "[ERROR] ", 0)
 	mqtt.CRITICAL = log.New(os.Stdout, "[CRIT] ", 0)
@@ -28,15 +28,21 @@ func Setup(hostname string, clientId string) {
 	opts.AutoReconnect = true
 	opts.SetPingTimeout(5 * time.Second)
 	client = mqtt.NewClient(opts)
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		panic(token.Error())
+	token := client.Connect()
+	token.Wait()
+	err := token.Error()
+	if err != nil {
+		log.Printf("Failed to connect to mqtt with err: %v", err)
+		return err
 	}
 
 	// TODO extract to a update function that uses Send
-	err := Send("phocus/stats/start_time", 0, false, time.Now().Format(time.RFC822), 10)
+	err = Send("phocus/stats/start_time", 0, false, time.Now().Format(time.RFC822), 10)
 	if err != nil {
-		log.Fatalf("Failed to send initial setup stats to MQTT with err: %v", err)
+		log.Printf("Failed to send initial setup stats to mqtt with err: %v", err)
 	}
+
+	return err
 }
 
 // Send uses the mqtt client to publish some data to a topic with a timeout
