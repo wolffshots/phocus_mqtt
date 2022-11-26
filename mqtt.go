@@ -57,8 +57,8 @@ func Send(topic string, qos byte, retained bool, payload interface{}, timeout ti
 }
 
 // Error publishes a caught error to the error stat
-func Error(qos byte, retained bool, payload interface{}, timeout time.Duration) error {
-	err := Send("phocus/stats/error", qos, retained, payload, timeout)
+func Error(qos byte, retained bool, payload error, timeout time.Duration) error {
+    err := Send("phocus/stats/error", qos, retained, fmt.Sprint(payload), timeout)
 	return err
 }
 
