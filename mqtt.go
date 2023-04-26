@@ -1,11 +1,12 @@
 package phocus_mqtt
 
 import (
-	"fmt"                                 // string formatting
-	"github.com/eclipse/paho.mqtt.golang" // mqtt client
-	"log"                                 // logging to stdout
-	"os"                                  // verbose logging
-	"time"                                // current time and timeouts
+	"fmt"  // string formatting
+	"log"  // logging to stdout
+	"os"   // verbose logging
+	"time" // current time and timeouts
+
+	mqtt "github.com/eclipse/paho.mqtt.golang" // mqtt client
 )
 
 var client mqtt.Client
@@ -36,8 +37,8 @@ func Setup(hostname string, clientId string) error {
 		return err
 	}
 
-	// TODO extract to a update function that uses Send
-	err = Send("phocus/stats/start_time", 0, false, time.Now().Format(time.RFC822), 10)
+	// time needs to be formatted as iso8601 and rfc3339 is the closest to that
+	err = Send("phocus/stats/start_time", 0, false, time.Now().Format(time.RFC3339), 10)
 	if err != nil {
 		log.Printf("Failed to send initial setup stats to mqtt with err: %v", err)
 	}
@@ -58,7 +59,7 @@ func Send(topic string, qos byte, retained bool, payload interface{}, timeout ti
 
 // Error publishes a caught error to the error stat
 func Error(qos byte, retained bool, payload error, timeout time.Duration) error {
-    err := Send("phocus/stats/error", qos, retained, fmt.Sprint(payload), timeout)
+	err := Send("phocus/stats/error", qos, retained, fmt.Sprint(payload), timeout)
 	return err
 }
 
